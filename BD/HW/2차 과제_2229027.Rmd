@@ -1,0 +1,71 @@
+---
+title: "hw_2"
+author: "JiminLee_2229027"
+date: "2023-09-15"
+output: word_document
+---
+```{r}
+getwd()
+```
+
+### 1. palmerpenguines library에는 Antartica의 Palmer station근처에 서식하는 펭귄에 대한 자료인 penguins가 내장되어 있다.
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+install.packages("palmerpenguins", dependencies=TRUE, repos = "http://cran.us.r-project.org")
+library('palmerpenguins')
+```
+
+```{r}
+data("penguins")
+head(penguins)
+```
+
+#### 1) penguins 자료의 개수는?
+
+```{r}
+nrow(penguins)
+```
+
+#### 2) penguins 자료에는 어떤 변수들이 있는가?
+
+```{r}
+variable.names(penguins) # or colnames()
+```
+
+#### 3) species는 어떤 것들이 있으며 각각 몇 개의 자료가 있는가?
+
+```{r}
+summary(penguins$species) # or table() method
+```
+
+#### 4) penguins 자료에 있는 4개의 연속변수 각각의 분포를 수업시간에 배운 내용을 바탕으로 살펴보시요.
+
+```{r}
+# bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g are continous variable
+ggplot(penguins, aes(x=bill_length_mm)) + geom_histogram(binwidth=0.5)
+ggplot(penguins, aes(x=bill_depth_mm)) + geom_histogram()
+ggplot(penguins, aes(x=flipper_length_mm)) + geom_histogram()
+ggplot(penguins, aes(x=body_mass_g)) + geom_histogram()
+```
+
+#### 5) bill_length_mm과 flipper_length_mm의 산점도를 그리시오.
+
+```{r}
+ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm))+geom_point()
+```
+
+#### 6) 5)에서 그린 산점도에 species 별로 다른 색을 칠하고 Species가 구별되는지 살펴보시오.
+
+```{r}
+ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm, colour=species)) + geom_point(size=2)
+```
+
+#### 7) 산점도를 species 별로 나누어서 그려보시오.
+
+```{r}
+ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm, colour=species)) + geom_point() + facet_wrap(~species)
+```

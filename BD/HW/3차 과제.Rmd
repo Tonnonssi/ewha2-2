@@ -1,0 +1,100 @@
+---
+title: "hw3_2229027"
+author: "JiminLee_2229027"
+date: "2023-09-23"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+install.packages('GGally',repos = "http://cran.us.r-project.org")
+library(GGally)
+library(tidyverse)
+library(ggmosaic)
+```
+
+```{r}
+data(mpg)
+head(mpg, 5)
+```
+
+```{r}
+nrow(mpg) # num of obseration : 234
+names(mpg)
+```
+```{r}
+help(mpg) # 변수의 세부적인 정보를 보기 위함 
+```
+
+#### 1) mpg 자료중 범주형 변수는 어떤 것들이 있는가?
+```{r}
+str(mpg)
+```
+
+manufacturer, model, trans, drv, fl, class
+
+#### 2) 1)에서 확인한 범주형 변수들 중 drv, class, fl을 수업시간에 배운 내용을 바탕으로 살펴보시오.
+```{r}
+ggplot(mpg, aes(drv)) + 
+  geom_bar() + 
+  ggtitle('bar chart of drv')
+```
+```{r}
+ggplot(mpg, aes(class)) + 
+  geom_bar() + 
+  ggtitle('bar chart of type of car(class)')
+```
+```{r}
+ggplot(mpg, aes(fl)) + 
+  geom_bar() + 
+  ggtitle('bar of fuel type')
+```
+#### 3) class별 drv, fl 분포를 살펴보시오.
+```{r}
+data1 = mpg[c('class', 'drv', 'fl')]
+df1 = as.data.frame(data1)
+ggplot(df1) + geom_mosaic(aes(x=product(class), fill=drv))
+```
+```{r}
+ggplot(df1) + geom_mosaic(aes(x=product(class), fill=fl))
+```
+### 2. iris자료는 R에 내장되어 있는 자료이다.
+
+#### 1) Sepal.Length, Sepal.Width, Petal.Length, Petal.Width의 분포가 Species 별로 어떻게 다른지 알아보려고 한다. 이에 알맞은 그림을 그리고 살펴보시오.
+```{r}
+data(iris)
+head(iris)
+```
+```{r}
+ggplot(iris, aes(Sepal.Length, color=Species)) + geom_boxplot() 
+```
+
+```{r}
+ggplot(iris, aes(Species, Sepal.Width, color=Species)) + geom_jitter()
+```
+```{r}
+ggplot(iris, aes(Species, Petal.Length, color=Species)) + geom_violin() + geom_jitter(alpha=0.2, size=1.5)
+```
+```{r}
+ggplot(iris, aes(Petal.Width, color=Species)) + geom_density()
+```
+
+#### 2) Sepal.Length와 나머지 3개의 연속변수들 (Sepal.Width, Petal.Length,
+Petal.Width)의 관계를 알아보려고 한다. 수업시간에 배운 내용을 바탕으로 살펴
+보시오.
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + geom_point(aes(color=Species)) + geom_smooth(method="lm")
+```
+```{r}
+ggplot(iris, aes(Sepal.Length, Petal.Width)) + geom_point(aes(color=Species)) + geom_smooth()
+```
+```{r}
+ggplot(iris, aes(Sepal.Length, Petal.Width)) + geom_point(aes(color=Species)) + geom_smooth(method="lm")
+```
+
+#### 3) 4개의 연속변수를 산점도 행렬을 이용하여 살펴보시오.
+```{r}
+ggpairs(iris, columns = 1:4, aes(color=Species))
+```
+

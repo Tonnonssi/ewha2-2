@@ -1,0 +1,116 @@
+---
+title: "BasicStatistics"
+author: "JiminLee_2229027"
+date: "2023-09-29"
+output: html_document
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# 4.11 
+strokes = c(0, 0.05, 0.1, 0.2, 0.3, 0.2, 0.15)
+ranges = c(0,1,2,3,4,5,6)
+data4.11 = data.frame(ranges, strokes)
+
+ggplot(data4.11, aes(ranges, strokes)) + stat_ecdf()
+```
+```{r}
+ggplot(data4.11, aes(x=ranges, y=strokes)) + geom_col()
+```
+
+```{r}
+for (i in 0:4){
+  val = dbinom(i, size = 4, prob = 0.5712)
+  cat(i, ':', round(val, 4),'\n')
+}
+```
+
+```{r}
+a = round(round(sqrt(10), 4) * 0.8, 4)
+print(a-5)
+print(a+5)
+```
+```{r}
+for (i in 0:5){
+  val = dbinom(i, size = 5, prob = 0.3)
+  cat(i, ':', round(val, 4),'\n')
+}
+```
+
+```{r}
+arr = c()
+
+for (i in 0:5){
+  val = dbinom(i, size = 5, prob = 0.3)
+  cat(i, ':', round(val, 4),'\n')
+  arr <- append(arr, round(val, 4))
+}
+```
+```{r}
+cnt = 0
+for (i in 0:5){
+  cnt = cnt + i * arr[i+1]
+}
+cnt # Expected Value 
+```
+```{r}
+x.2 = 0
+for (i in 0:5){
+  x.2 = x.2 + i * i * arr[i+1]
+}
+x.2 - cnt^2
+```
+```{r}
+make.binomial.vec <- function(n, p){
+  arr = c()
+  for (i in 0:n){
+  val = dbinom(i, size = n, prob = p)
+  arr <- append(arr, round(val, 4))
+  }
+  return (arr)
+}
+```
+
+```{r}
+vec.a = make.binomial.vec(50,0.05)
+vec.b = make.binomial.vec(50, 0.1)
+
+print(sum(vec.a[1:3]))
+print(sum(vec.b[1:3]))
+```
+
+```{r}
+vec.46 = make.binomial.vec(40,0.5)
+sum(vec.46[21:41])
+vec.46
+```
+```{r}
+rng = 0:40
+exp.val = sum(rng*vec.46)
+var = sum((rng^2)*vec.46) - exp.val^2
+sqrt(var)
+```
+```{r}
+vec.50 = make.binomial.vec(10, 0.1)
+1 - vec.50[1]
+vec.50
+
+price = c()
+
+for (i in 0:10){
+  p = 0
+  test = 80
+  treatment = 500
+  
+  p = test*(10-i) + treatment*i
+  
+  price = append(price, p)
+  
+}
+print(price)
+
+sum(price*vec.50x)
+```
+

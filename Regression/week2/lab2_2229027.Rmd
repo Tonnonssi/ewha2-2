@@ -1,0 +1,180 @@
+---
+title: "Lab2_2229027"
+author: "JiminLee_2229027"
+date: "2023-09-15"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+```{r}
+library(tidyverse)
+```
+
+### The dataset spaghetti.txt contains the weight (in oz) of 20 spaghetti boxes of a famous pasta brand.
+
+• Load the dataset spaghetti.txt in R, using the function read.table.
+
+```{r}
+setwd('/Users/jimin/Desktop/데스크탑 - 이지민의 MacBook Air/지민/ewha/2023-2/Regression/week2')
+data = read.table('spaghetti.txt')
+head(data)
+```
+
+### A consumers' association would like to sue the company, affirming that the mean box weight is lower than the nominal one (16 oz). To be sure about their statement, they ask you to perform a suitable test with level 1%.
+
+#### First compute the sample mean and the standard deviation of the box weight.
+
+```{r}
+mean.sp = mean(data$spaghetti)
+sd.sp = sd(data$spaghetti)
+
+cat('mean :',mean.sp,'\nsd :', sd.sp)
+```
+
+#### Perform the test for the consumers' association.
+
+##### What is your null hypothesis H0?
+
+H0 : M = 16
+
+##### What is your alternative hypothesis H1?
+
+H1 : M \< 16
+
+##### What distribution can you assume for the test statistic (type of distribution and parameters), and why?
+
+```{r}
+ggplot(data, aes(x=spaghetti)) + geom_histogram(binwidth = 0.12)
+```
+
+14부터 17까지 넓게 펼쳐져 있다.
+특히 15 쪽에 집중된 모습을 보인다.
+
+##### Compute the test statistic.
+
+```{r}
+nrow(data) # num of obesrvations
+```
+
+```{r}
+calTestStatistic <- function(s, n, x.bar, M) {
+  se <- s / sqrt(n)
+  t_value <- (x.bar - M) / se
+  return(t_value)
+}
+
+t.stat = calTestStatistic(x.bar=mean.sp, M=16, s=sd.sp, n=nrow(data))
+t.stat
+```
+
+##### Compute the test p-value.
+
+```{r}
+tt = t.test(x=data$spaghetti, alternative='less', mu=16, conf.level = 0.99)
+tt$p.value
+```
+
+```{r}
+tt
+```
+
+##### Do you reject the null hypothesis, at significance level 1%?
+
+Yes, since t value is less than p value.
+
+##### Compute the 99% two-sided confidence interval for the mean of the box weight.
+
+```{r}
+t.test(x=data$spaghetti, alternative='two.sided', mu=16, conf.level = 0.99)$conf.int
+```
+
+### Consider again the dataset record.txt that you used for Lab 1. This dataset contains running records obtained from athletes from different countries in various types of athletics events (sprints and middle-distance).
+
+We have data about 55 countries (observations) and 6 records (variables): 100 meters, 200 meters, 400 meters, 800 meters, 1500 meters and 3000 meters.
+
+#### Load the dataset record.txt in R, using the function read.table (remember to set sep=' ')
+
+```{r}
+data.2 = read.table('record.txt')
+head(data.2)
+```
+
+#### Draw a scatterplot and compute the correlation for all pairs of variables in the dataset. Interpret the results you obtained: what can you observe about the relationship among the variables?
+
+```{r}
+pairs(data.2) # Positively increasing
+```
+
+### Consider the variables m100 and m400.
+
+#### Using the equations(not lm function or matrix equation in r), compute the least square estimators for the coefficients of a single linear regression model, with response m100 and predictor m400. How do you interpret the slope or the regression line?
+
+```{r}
+x = data.2$m100 # response
+y = data.2$m400 # predictor
+
+b1 = sum((y-mean(y))*(x-mean(x)))/sum((x-mean(x))^2)
+b0 = mean(y) - mean(x)*b1
+
+cat('b0 : ',b0,'\nb1 : ',b1)
+
+```
+
+#### Produce a scatter plot for m1500 vs m800 with the fitted regression line superimposed.
+
+```{r}
+plt = ggplot(data=data.2, aes(x=m100, y=m400)) + 
+  geom_point() + 
+  stat_smooth(method = "lm", formula = y ~ x, geom = "smooth") + 
+  ggtitle('Linear Regression line and scatter plot')
+
+plt
+```
+
+#### Re-compute the least square estimators of beta0 and beta1 using the matrix equation.
+
+```{r}
+X = cbind(1, x)
+b.vec = solve(t(X)%*%X)%*%t(X)%*%y
+b.vec
+```
+
+#### Re-compute the least square estimators of beta0 and beta1 using the R function lm, and visualize the summary of the regression.
+
+```{r}
+lm.fit = lm(y~x) # linear regression
+summary(lm.fit)
+```
+
+#### Which are n and p for the considered regression model?
+
+n : total num of observations p : total num of parameters
+
+#### Compute the fitted values and the residuals, using the estimated regression line.
+
+```{r}
+print('fitted.values')
+fitted(lm.fit)
+print('residuals')
+residuals(lm.fit)
+```
+
+#### Consider the 25th and 75th percentiles of the variable m100 on the dataset.Use the estimated regression line to estimate the fitted value of the variable m1500 at each of these two percentiles.
+
+```{r}
+m100.25th = quantile(data.2$m100, 0.25)
+m100.75th = quantile(data.2$m100, 0.75)
+
+predict(lm.fit, newdata = data.frame(x = m100.25th))
+predict(lm.fit, newdata = data.frame(x = m100.75th))
+```
+
+```{r}
+m100.25th
+```
+

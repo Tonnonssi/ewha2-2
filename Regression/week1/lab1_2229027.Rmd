@@ -1,0 +1,52 @@
+---
+title: "Regression_lab1"
+author: "2229027 Jimin Lee"
+output:
+  word_document: default
+  pdf_document: default
+---
+The dataset record.txt contains running records obtained from athletes from different countries in various types of athletics events (sprints and middle-distance). We have data about 55 countries (observations) and 6 records (variables): 100 meters, 200 meters, 400 meters, 800 meters, 1500 meters and 3000 meters.
+
+### Load the dataset record.txt in R, using the function read.table
+
+```{r}
+# prepare data
+setwd('/Users/jimin/Desktop/지민/ewha/2023-2/Regression/')
+record <- read.table("record.txt" ,head=TRUE)
+head(record, n=10)
+```
+### Produce summaries of the variable m800, including 
+#### Numerical summaries: average, standard deviation, median and quartiles, maximum and minimum, interquartile difference
+```{r}
+# numerical summaries
+print(summary(record$m800))
+cat("sd : ", sd(record$m800), "\n")
+cat("IQR : ", IQR(record$m800))
+```
+#### Graphical summaries: histogram and boxplot
+#### What can you observe about the variable distribution?
+
+The distribution of m800 record is right-skewed.
+
+```{r}
+# graphical summaries
+hist(x=record$m800, main='Histogram of m800 record')
+help(hist)
+```
+
+```{r}
+boxplot(record$m800, main='boxplot of m800 record')
+```
+### Produce scatter plot between all the variables(m100,m200,m400,m800,m1500,m3000). What can you observe from the scatter plot? Are they correlated?
+When x increases, also y increase. 
+positive correlation.
+
+```{r}
+pairs(record, main = "athletes per records") # print all scatters between cols
+help(pairs)
+```
+```{r}
+cor(record) # search the correlation between x,y
+```
+
+

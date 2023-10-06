@@ -1,0 +1,117 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+
+# 1. R에서 다음의 결과가 나오는 명령문을 만들고 결과를 보이시오.
+
+## 1) "A" "A" "B" "B" "B" "C" "C" "C" "C"
+
+```{r}
+rep(c('A','B','C'), times=c(2,3,4))
+```
+
+## 2) 1 2 2 3 3 3 1 2 2 3 3 3
+
+```{r}
+rep(c(1,2,2,3,3,3), times=2)
+```
+
+## 3) 3 7 11 15 19 23 27 31 35 39 43 47 51 55 59 63 67 71 75 79
+
+```{r}
+seq(3,79,4)
+```
+
+# 2. 다음과 같이 UsingR 패키지를 인스톨한 후 내장되어 있는 데이터셋 home를 이용하여 답하시오. home은 Maplewood, NJ의 집값을 비교해 놓은 자료이다.
+
+```{r}
+install.packages("UsingR", dependencies=TRUE, repos = "http://cran.us.r-project.org")
+library('UsingR')
+data("home")
+head(home)
+```
+
+## 1) home에는 몇 개의 자료가 있는가?
+
+```{r}
+nrow(home) # 행의 개수가 home 자료의 개수 
+```
+
+## 2) home에는 몇 개의 변수가 있는가?
+
+```{r}
+ncol(home) # 열의 개수가 home의 변수의 수
+```
+
+## 3) old의 평균과 표준편차는 얼마인가?
+
+```{r}
+print(mean(home$old)) # 평균
+print(sd(home$old)) # 표준편차
+```
+
+## 4) new의 평균과 표준편차는 얼마인가?
+
+```{r}
+print(mean(home$new)) # 평균
+print(sd(home$new)) # 표준편차
+```
+
+## 5) old 집값이 50000 이상인 자료는 몇 개인가?
+
+```{r}
+sum(home$old >= 50000)
+```
+
+## 6) old 집값이 50000 이상인 자료와 50000 미만인 자료로 나누어 각각 new의 평 균을 구하시오.
+
+```{r}
+old.50000up = home[home$old >= 50000, ]
+old.50000down = home[home$old < 50000, ]
+
+print(mean(old.50000up$new))
+print(mean(old.50000down$new))
+```
+
+# 3. 다음의 데이터를 이용하여 1)\~6)까지의 명령을 수행하시오. 2 5 6 9 10 8
+
+## 1) 데이터 벡터 x를 만드시오.
+
+```{r}
+x = c(2,5,6,9,10,8)
+x
+```
+
+## 2) 각 데이터의 제곱근으로 구성된 벡터 x2를 만드시오.
+
+```{r}
+x2 = x **(1/2)
+x2
+```
+
+## 3) 각 데이터의 제곱근의 합을 구하시오.
+
+```{r}
+sum(x2)
+```
+
+## 4) 각 데이터에서 2를 뺀 값들을 구하시오.
+
+```{r}
+x - 2
+```
+
+## 5) 벡터 x의 최소값과 최댓값을 구하시오.
+
+```{r}
+range(x) # min, max
+```
+
+## 6) 벡터 x에서 5보다 큰 값들만으로 구성된 벡터 xlarge를 만드시오.
+
+```{r}
+xlarge = x[x > 5]
+xlarge
+```

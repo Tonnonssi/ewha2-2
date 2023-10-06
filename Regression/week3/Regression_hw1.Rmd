@@ -1,0 +1,261 @@
+---
+title: "Regression_hw1"
+author: "JiminLee_2229027"
+date: "2023-10-02"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+## Applied questions: Data analysis of body fat dataset(60 pts)
+
+Consider the dataset contained in 'BODY FAT.TXT'. Please read carefully the description of this dataset and the guidelines for this part of the homework before performing the analyses in R and writing your results (file datasetguide.pdf).
+```{r}
+setwd('/Users/jimin/Desktop/데스크탑 - 이지민의 MacBook Air/지민/ewha/2023-2/Regression/week3/')
+```
+
+```{r}
+body.fat = read.table('body_fat.txt', header=TRUE)
+head(body.fat, 10)
+```
+
+### a. (10 points) Re-compute body fat percentage using the 'Density' variable and Siri's equation: 
+body fat percentage = (495/Density) − 450 
+Note that the values are percentages, so they must be between 0 and 100; change any negative value to 0, and any value \> 100 to 100. Are there any erroneous values in the variable 'SiriBF- Perc'? If so, employ your recomputed variable in further analyses. [Hint: the variable 'SiriBF- Perc' has only one decimal place. Before comparing it to your recomputed variable, you will need to round your recomputed variable. You can do so with the command round(variable,digits=1)] Along with body fat percentage, consider the variables weight, height and abdomen circumference. Subsample the dataset in order to have only the variables of interest [Hint: use the command dataset[,columns to keep]]. Produce a scatter plot matrix of the subsampled dataset [Hint: use the command plot(subsampled dataset)]. Looking at this will help you see if there are units (men) for which some of the measurements contain obvious mistakes. Are there any? If so, remove those units in further analyses.
+
+```{r}
+# recompute body fat percentage
+compute.bodyfat = function(x){
+  y = (495/x) - 450
+  return (round(y, 1))
+}
+
+# find errors of dataset SiriBF- Perc
+re.SiriBFperc = apply(body.fat[,'Density'], 2, compute.bodyfat) # recomputed body fat perc
+help(apply)
+# del.errors : 0 이하면 0으로, 100 초과하면, 100으로 만들어 주는 함수 
+del.errors = function(x){
+  if (x >= 0 & x<= 100) return (x)
+  else if(x < 0) return (0)
+  else return (100)
+}
+
+fixed.SiriBFperc = apply(re.SiriBFperc, 1, del.errors) # error fixed ver of re.SiriBFperc
+
+# 오류를 제거한 버전과 원본 버전의 차이를 비교해 몇 개의 잘못된 데이터가 있었는지 확인
+print(length(re.SiriBFperc))
+print(sum(re.SiriBFperc == fixed.SiriBFperc))
+```
+
+```{r}
+# 기존 SiriBFperc 열에 오류가 있는지 확인한다. 
+SiriBFperc = body.fat[,'SiriBFperc']
+SiriBFperc.col = apply(SiriBFperc, 1, del.errors)
+
+# 오류를 제거한 버전과 원본 버전의 차이를 비교해 몇 개의 잘못된 데이터가 있었는지 확인
+print(length(SiriBFperc.col))
+print(sum(SiriBFperc == SiriBFperc.col))
+
+# 오류가 있는 데이터가 없다. 
+```
+
+```{r}
+sub.bodyfat = cbind(fixed.SiriBFperc, body.fat[,c('Weight', 'Height','AbdomenC')])
+colnames(sub.bodyfat)[1] = 'BodyFatPercent' # col name 변경 
+head(sub.bodyfat, 5)
+```
+
+```{r}
+plot(sub.bodyfat)
+```
+```{r}
+# outliers 솎아내기 : 인덱스 파악
+which(sub.bodyfat[,'Weight'] >= 250) # 39, 41
+which(sub.bodyfat[,'Height'] < 50) # 42
+which(sub.bodyfat[,'AbdomenC'] > 130) # 39
+which(sub.bodyfat[,'BodyFatPercent'] >= 45) # 216
+```
+
+
+```{r}
+sub.bodyfat.1 = sub.bodyfat[-c(39,41,42,216),] # delete outliers 
+
+plot(sub.bodyfat.1)
+```
+
+
+### b. (20 points) Produce numerical and graphical summaries for body fat percentage, weight, height and abdomen circumference. Do the distributions appear symmetric and bell-shaped, or are they skewed? What can you observe about the variability of the different variables? Are there some very extreme values in any of the distributions? Based on these data, is there evidence that the average body fat percentage in the male population exceeds 25%? How about evidence that the average weight in the male population not equals to 180 pounds? Perform hypothesis tests to answer these questions, and provide the p-values.
+
+```{r}
+# numercial summary + variable's variability(range, IQR, var, std)
+summary(sub.bodyfat)
+```
+```{r}
+apply(sub.bodyfat, 2, sd) # standard deviation
+```
+
+```{r}
+apply(sub.bodyfat, 2, var) # variance
+```
+
+```{r}
+apply(sub.bodyfat, 2, range) # range : min, max value
+```
+
+```{r}
+apply(sub.bodyfat, 2, IQR) # IQR
+```
+
+```{r}
+install.packages('gridExtra', dependencies=TRUE, repos = "http://cran.us.r-project.org")
+
+library(tidyverse)
+library(gridExtra)
+```
+
+```{r}
+# graphical summary 
+g1 = ggplot(sub.bodyfat, aes(x=BodyFatPercent)) +  geom_boxplot() + ggtitle('BodyFatPercent boxplot')
+g2 = ggplot(sub.bodyfat, aes(x=Weight)) + geom_freqpoly(bins=16) + ggtitle('Weight poly')
+g3 = ggplot(sub.bodyfat, aes(x=Height)) +  geom_boxplot() + ggtitle('Height boxplot')
+g4 = ggplot(sub.bodyfat, aes(x=AbdomenC)) + geom_freqpoly(bins=16) + ggtitle('abdomen circumference poly')
+
+grid.arrange(g1,g2,g3,g4, ncol=2,nrow=2) # 4개의 그래프를 한 번에 출력
+```
+BodyFatPercent : slightly left skewed.
+Weight, AbdomenC : right skewed.
+Height : one extreme outlier, slightly right skewed.
+
+Outlier은 존재한다. 구체적으로 어떤 outlier가 존재하는지는 (a)에서 이미 찾았기에 추가적으로 서술하지 않는다. 하단에 진행한 평균에 대한 가설검정은 outlier를 제거한 sub.bodyfat.1로 진행한다. 
+
+```{r}
+# 모집단의 분포를 모르지만, n=252로 z-검정을 사용한다.
+
+z.test = function(mu, mean, n, sd, alternative="two.sided", conf.level){
+  test.statistics = round((mean - mu) / (sd / (n^0.5)), 2)
+  
+  if (alternative == 'two.sided'){
+    alpha = (1 - conf.level)/2
+    p.value = pnorm(abs(test.statistics), lower.tail = FALSE)
+  }
+  else if (alternative == 'less'){
+    alpha = (1 - conf.level)
+    p.value = pnorm(abs(test.statistics), lower.tail = FALSE)
+  }
+  else if (alternative == 'greater'){
+    alpha = (1 - conf.level)
+    p.value = pnorm(abs(test.statistics), lower.tail = FALSE)    
+  }
+  else {
+    print('Wrong Alternative. Alternative should be two.sided, less, or greater.')
+    return ()
+  }
+  
+  cat('Statistical Hypothesis Test in conf.level = ',conf.level,'\n')
+  cat('--------------------------------------------------\n')
+  cat('alpha : ', alpha, '\n')
+  cat('test.statistics : ', test.statistics, '\n')
+  cat('p.value : ', round(p.value, 4), '\n')
+  cat('--------------------------------------------------\n')
+    
+  if (p.value <= alpha) cat('H0(null hypothesis) is rejected.')
+  else cat('H0(null hypothesis) is not rejected.')
+}
+```
+
+Body Fat Percent에 대한 가설 검정(0.05 유의수준에서)
+H0 : mu = 0.25
+H1 : mu > 0.25
+```{r}
+z.test(mu = 0.25, 
+       mean = mean(sub.bodyfat.1[,'BodyFatPercent']), 
+       n = length(sub.bodyfat.1[,'BodyFatPercent']), 
+       sd = sd(sub.bodyfat.1[,'BodyFatPercent']), 
+       alternative = 'greater', 
+       conf.level = 0.95)
+```
+Weight average에 대한 가설 검정 (0.05 유의수준에서)
+H0 : mu = 180
+H1 : mu != 180
+```{r}
+z.test(mu = 180, 
+       mean = mean(sub.bodyfat.1[,'Weight']), 
+       n = length(sub.bodyfat.1[,'Weight']), 
+       sd = sd(sub.bodyfat.1[,'Weight']), 
+       alternative = 'two.sided', 
+       conf.level = 0.95)
+```
+
+### c. (30 points) Compute the correlation between the body fat percentage and each of the variables weight, height and abdomen. Then, fit three separate simple regression models for body fat percentage versus weight, height and abdomen circumference. For each regression model, make sure you provide:
+
+• Model employed; 
+• Least square estiamtes of the parameter β0 and β1; 
+• The equation of the estimated regression line
+```{r}
+# the least square estimators
+cal.LSE = function(X, y){
+  beta = solve(t(X)%*%X)%*%t(X)%*%y
+  return (beta)
+}
+```
+
+```{r}
+# body fat percentage & weight
+x = sub.bodyfat.1$BodyFatPercent
+x = cbind(1,x)
+y1 = sub.bodyfat.1$Weight
+
+cat('Least square estiamtes of the parameter β0 and β1\n')
+LSE1 = cal.LSE(x,y1)
+print(LSE1)
+
+cat('\nThe equation of the estimated regression line\n')
+cat('y = ',LSE1[1], '+', LSE1[2], 'x + e')
+```
+
+```{r}
+# body fat percentage & height
+y2 = sub.bodyfat.1$Height
+
+LSE2 = cal.LSE(x,y2)
+
+cat('Least square estiamtes of the parameter β0 and β1\n')
+print(LSE2)
+
+cat('\nThe equation of the estimated regression line\n')
+cat('y = ',LSE2[1], '+', LSE2[2], 'x + e')
+```
+
+```{r}
+# body fat percentage & abodomen
+y3 = sub.bodyfat.1$AbdomenC
+
+cat('Least square estiamtes of the parameter β0 and β1\n')
+LSE3 = cal.LSE(x,y3)
+print(LSE3)
+
+cat('\nThe equation of the estimated regression line\n')
+cat('y = ',LSE3[1], '+', LSE3[2], 'x + e')
+```
+
+```{r}
+p1 = ggplot(data=sub.bodyfat.1, aes(x=BodyFatPercent, y=Weight, color=Weight)) + 
+  geom_point(size=0.6) + 
+  stat_smooth(method='lm', formula = y~x, geom = 'smooth') + 
+  ggtitle('y = weight')
+
+p2 = ggplot(data=sub.bodyfat.1, aes(x=BodyFatPercent, y=Height, color=Height)) + 
+  geom_point(size=0.6) + 
+  stat_smooth(method='lm', formula = y~x, geom = 'smooth') + 
+  ggtitle('y = height')
+
+p3 = ggplot(data=sub.bodyfat.1, aes(x=BodyFatPercent, y=AbdomenC, color=AbdomenC)) + 
+  geom_point(size=0.6) + 
+  stat_smooth(method='lm', formula = y~x, geom = 'smooth') + 
+  ggtitle('y = AbdomenC')
+
+grid.arrange(p1, p2, p3, ncol = 2, nrow = 2)
+```
+
+

@@ -1,0 +1,138 @@
+---
+title: "lab3"
+author: "JiminLee_2229027"
+date: "2023-10-02"
+output:
+  word_document: default
+  html_document: default
+---
+
+## Consider the dataset bears.txt.
+This contains several variables measured on n=141 “bear capturing” occasions, with the following variables:
+ID: Identification number
+Age: Bear's age, in months
+Month: Month when the measurement was made. Sex. 1 = male 2 = female Head.L: Length of the head, in inches
+Head.W: Width of the head, in inches
+Neck.G: Girth (distance around) the neck, in inches
+Length: Body length, in inches
+Chest.G: Girth (distance around) the chest, in inches
+Weight: Weight of the bear, in pounds
+Obs.No: Observation number for this bear. For example, the bear with ID=41 (Bertha) was measured on four occasions. The value of Obs.No goes from 1 to 4 for these observations Name: The names of the bears given to them by the researchers.
+```{r}
+setwd('/Users/jimin/Desktop/데스크탑 - 이지민의 MacBook Air/지민/ewha/2023-2/Regression/week3/')
+bears = read.table('bears.txt', header=TRUE)
+head(bears, 10)
+```
+
+### The observations are not independent, because the same bear may have been captured more than once (see variables “Name”, “ID” and “Obs.No”).
+#### For each bear, select only the first observation, so that the new dataset will contain only independent observations. Why is that important for linear regression? How many bears do we have in the dataset?
+linear regression의 데이터는 서로 독립이란 전제에서 성립한다. 중복 관측 데이터가 있으면 독립조건이 성립되지 않는다. 따라서 첫 번째 관측치만을 반영함으로써 독립 조건을 만족한다. 
+```{r}
+nrow(bears) # 141 : 정제 전의 곰의 마릿수 
+bears_indep=bears[bears$Obs.No==1,] 
+print(nrow(bears_indep)) # 99 : 중복되지 않은 곰 마릿수
+head(bears_indep, 10)
+```
+### Consider the variables y=“Weight”, x1=“Chest.G” and x2=“Head.W”. Fit two separate simple regression models for y=“Weight” on x1=“Chest.G”, and y=“Weight” on x2=“Head.W” (you can use the lm function or the equations).
+```{r}
+y= bears_indep$Weight
+x1 = bears_indep$Chest.G
+x2 =  bears_indep$Head.W
+
+cat('x1 : Chest.G, y : Weight linear regression \n')
+cat('-----------------------------------------\n')
+lm.chest = lm(y~x1)
+summary(lm.chest)
+
+cat('x1 : Head.W, y : Weight linear regression \n')
+cat('-----------------------------------------\n')
+lm.head = lm(y~x2)
+summary(lm.head)
+```
+
+#### Do the estimated regression slopes suggest positive or negative relationships? Is there a meaningful interpretation for the regression intercepts?
+
+Both regression line have positive relationships. (12.64, 61.482)
+regression intercepts : represents the mean value of the response variable when all of the predictor variables in the model are equal to zero. (출처 : https://www.statology.org/intercept-in-regression/)
+Both regression line are more than -200 when the predictor value are nearly 0.
+
+#### Using the equation, estimate the variance sigma^2 of the error term for the two models (you can check the result with the summary function, but you need to compute it using the equation).
+```{r}
+# regression line 
+chest.weight.line = function(x){
+  est.y = -266.677 + 12.6462*x
+  return (est.y)
+}
+
+head.weight.line = function(x){
+  est.y = -201.697 + 61.482*x
+  return (est.y)
+}
+# estimated y
+est.weight.c = apply(bears_indep[c('Chest.G')], 2, chest.weight.line)
+est.weight.h = apply(bears_indep[c('Head.W')], 2, head.weight.line)
+
+est.sigmaSquare = function(est.y, y, n, p=2){
+  sigmaSquare = sum((y - est.y)^2)/(n-p)
+  return (sigmaSquare)
+}
+
+cat('x = chest, y = weight\n sigma^2 : ')
+est.sigmaSquare(est.y = est.weight.c,
+                y = bears_indep[c('Weight')],
+                n = length(bears_indep),
+                p = 2)
+
+cat('x = head, y = weight\n sigma^2 : ')
+est.sigmaSquare(est.y = est.weight.h,
+                y = bears_indep[c('Weight')],
+                n = length(bears_indep),
+                p = 2)
+```
+
+#### Using the equation, compute the coefficient of determination R2 for both regressions (you can check the result with the summary function, but you need to compute it using the equation). What is their interpretation?
+```{r}
+cal.R2 = function(y, est.y){
+  R2 = 1 - sum((y - est.y)^2) / sum((y - mean(y))^2)
+  return (R2)
+}
+
+R2.chest = cal.R2(y = y, est.y = est.weight.c)
+R2.head = cal.R2(y = y, est.y = est.weight.h)
+
+cat('R2.chest : ', R2.chest,'\n')
+cat('R2.head : ',R2.head)
+```
+chest-weight, head-weight는 모두 설명 변수와 반응 변수가 선형관계가 있다. 그 중 1에 더욱 근접한 chest-weight에 더욱 확실한 선형 관계가 드러난다. 
+
+#### Between x1=“Chest.G” and x2=“Head.W”, which appears to be the best predictor for y=“Weight”? (Address this comparing the coefficients of determination R2 of the two regressions).
+R^2의 값이 더욱 1에 가까운 chest가 head보다 더 좋은 설명 변수다. 
+
+### Fit a multiple linear regression model with predictors x1=“Chest.G” and x2=“Head.W”.
+
+#### Using the equation, estimate the variance sigma2 of the error term for the new model (you can check the result with the summary function, but you need to compute it using the equation).
+```{r}
+X = cbind(x1, x2)
+summary(lm(y~X))
+```
+```{r}
+X = cbind(1, x1, x2)
+
+est.y = X%*%solve(t(X)%*%X)%*%t(X)%*%y # estimated y를 계산
+
+est.sigmaSquare(est.y = est.y,
+                y = bears_indep[c('Weight')],
+                n = length(bears_indep),
+                p = 3)
+```
+
+#### Using the equation, compute the coefficient of determination R2 for the new regression (you can check the result with the summary function, but you need to compute it using the equation). What is its interpretation?
+```{r}
+R2.multi = cal.R2(y = y, est.y = est.y)
+R2.multi
+```
+R^2의 값이  0.9297148으로, 거의 1에 수렴하는 모습을 보인다. 이는 설명 변수 head, chest와 반응 변수 weight 사이에 선형 관계가 있음을 의미한다. 
+
+#### Do you think this model is better that the one with only x1? Why?
+좋다고 생각한다. 더 많은 설명변수를 갖고 있음에도 선형적 관계가 있음을 나타낼 수 있기 때문이다. 
+\
