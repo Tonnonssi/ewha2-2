@@ -85,7 +85,7 @@ tt
 
 ##### Do you reject the null hypothesis, at significance level 1%?
 
-Yes, since t value is less than p value.
+Yes, since p value < 1%.
 
 ##### Compute the 99% two-sided confidence interval for the mean of the box weight.
 
@@ -109,6 +109,9 @@ head(data.2)
 ```{r}
 pairs(data.2) # Positively increasing
 ```
+```{r}
+cor(data.2)
+```
 
 ### Consider the variables m100 and m400.
 
@@ -124,6 +127,7 @@ b0 = mean(y) - mean(x)*b1
 cat('b0 : ',b0,'\nb1 : ',b1)
 
 ```
+The slope of regression line is 4.94. This slope line means that an increase of 1 sec in the m100 record corresponds to an increase of 4.94 sec in the m400 record.
 
 #### Produce a scatter plot for m1500 vs m800 with the fitted regression line superimposed.
 

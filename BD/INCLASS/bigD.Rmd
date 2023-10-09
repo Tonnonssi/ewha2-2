@@ -1,0 +1,53 @@
+---
+title: "inclass_2"
+author: "JiminLee_2229027"
+date: "2023-09-15"
+output: word_document
+---
+```{r}
+library(tidyverse) # 여러가지 패키지가 한  번에 깔림 
+install.packages("palmerpenguins", dependencies=TRUE, repos = "http://cran.us.r-project.org")
+library('palmerpenguins')
+```
+
+```{r}
+data("penguins")
+head(penguins)
+```
+```{r}
+p = ggplot(penguins, aes(species)) + geom_bar()
+summary(p)
+```
+```{r}
+tmp = penguins$species
+
+ggplot(tmp, aes(x="", y=count, fill=speices))+
+  geom_bar(stat='identity')
+```
+```{r}
+ggplot(penguins, aes(species, bill_length_mm)) + geom_jitter()
+```
+```{r}
+ggplot(penguins, aes(species, bill_length_mm)) + geom_violin() + geom_boxplot() + geom_jitter()
+```
+
+```{r}
+ggplot(penguins, aes(bill_length_mm, color=species)) +
+  geom_density(linewidth = 2)
+```
+```{r}
+ggplot(penguins, aes(bill_depth_mm,body_mass_g)) + 
+  geom_point(aes(color=species)) + 
+  geom_smooth(aes(color=species), linewidth=2, method='lm') + 
+  geom_smooth(aes(group="1"), linewidth=2, linetype=2, method='lm')
+```
+
+```{r}
+tble = table(penguins$species, penguins$island, penguins$sex)
+tble
+```
+```{r}
+data = as.data.frame(tble)
+data
+```
+
