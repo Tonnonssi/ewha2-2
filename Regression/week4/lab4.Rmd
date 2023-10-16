@@ -1,0 +1,167 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+As you did in Lab3, consider only the first observation for each bear (bears_indep=bears[bears$Obs.No==1,]).
+```{r}
+bears_df = read.table("/Users/jimin/Desktop/데스크탑 - 이지민의 MacBook Air/지민/ewha/2023-2/Regression/week3/bears.txt",header = TRUE)
+head(bears_df, 5)
+```
+```{r}
+bears_indep=bears_df[bears_df$Obs.No==1,] # 중복되는 관측값 삭제하기 
+```
+
+Consider the simple linear regression model with response y=“Weight” and predictor x1=“Neck.G” (you can fit the model using the lm function or the equations).
+```{r}
+y = bears_indep$Weight
+x1 = bears_indep$Neck.G
+model.1 = lm(y~x1)
+summary(model.1)
+```
+
+Provide the estimated regression slope. Does it suggest a positive or negative relationship?
+```{r}
+coef = model.1$coefficients
+
+cat("y = ",coef[1] ,"+", coef[2],"x + e")
+# It has positive relationship  because slope is over 0.
+```
+
+• Using the equation, estimate the variance of the errors (i.e. compute sigma2_hat) and the standard error of the estimated slope (i.e. compute se(beta1_hat) ). You can check the result with the summary function, but you need to compute it using the equation.
+```{r}
+RSS.1 = sum(residuals(model.1)^2)
+df = length(residuals(model.1)) - 2 # there are 2 parameters
+sigma2_hat = RSS.1 / df
+cat('the variance of the error : ',sigma2_hat,'\n') 
+
+X = matrix(x1)
+X = cbind(1, X)
+
+se.beta1.hat = sqrt(sigma2_hat*solve(t(X)%*%X)[2,2])
+cat('the standard error of the estimated slope : ', se.beta1.hat)
+```
+
+• Perform a test for the hypotheses: H0: beta1 = 0 vs H1: beta1 != 0. Provide:
+o Distribution of the test statistic under H0 (type and parameters of the distribution)
+자유도가 n-p인 t분포를 따른다. 
+
+o Value of the test statistics, computed using the equation (you can check the result with the summary function, but you need to compute it using the equation)
+```{r}
+beta1_hat = coef[2]
+test_statistics = beta1_hat / se.beta1.hat
+cat("test_statistics : ", test_statistics)
+```
+
+o P-value, computed using the equation (you can check the result with the summary function, but you need to compute it using the equation)
+```{r}
+pval.1 = 2*pt(abs(test_statistics), df, lower.tail = FALSE)
+round(pval.1, 4) # pval of test_statistics
+```
+
+o Interpretation of the result.
+pval의 크기가 0이기 때문에 어떤 유의수준에서라도 H0는 기각된다. 
+
+Fit a multiple linear regression model with response y=“Weight” and predictors x1=“ Neck.G” and x2=“Head.W” (you can fit the model using the lm function or the equations).
+```{r}
+x2 = bears_indep$Head.W
+model.2 = lm(y~x1+x2)
+summary(model.2)
+```
+
+• Using the equation, compute TSS, RSS and SS_reg.
+```{r}
+TSS = sum((y - mean(y))^2)
+RSS = sum(residuals(model.2)^2)
+SS_reg = TSS - RSS
+cat('TSS : ', TSS,'\nRSS : ',RSS, '\nSS_reg : ',SS_reg)
+```
+
+• Perform a test on all the predictors, i.e. test the hypotheses H0: beta1 = beta2 = 0 vs
+H1: at least one != 0. Provide:
+o Distribution of the test statistic under H0 (type and parameters of the distribution)
+df1 = p-1, df2 = n-p인 F분포를 따른다. 
+
+o Value of the test statistics, computed using the equation (you can check the result
+with the summary function, but you need to compute it using the equation)
+```{r}
+p = 3 # b0,b1,b2
+n = length(y) # 99
+t_stat = ((SS_reg) / (p-1)) / (RSS / (n-p))
+cat("t_stat : ",t_stat)
+```
+
+o P-value, computed using the equation (you can check the result with the summary
+function, but you need to compute it using the equation) 
+```{r}
+pval.2 = pf(t_stat,p-1, n-p, lower.tail = FALSE )
+round(pval.2, 5)
+```
+
+o Interpretation of the result.
+p val이 0이기 때문에 모든 유의수준에서 H0이 기각된다. 
+
+Consider a multiple linear regression model with response y=“Weight” and predictors x1=“Head.L”, x2=“Head.W”, x3=“Neck.G”, x4=“Length” and x5=“Chest.G”.
+```{r}
+model.3 = lm(data = bears_indep, Weight~Head.L+Head.W+Neck.G+Length+Chest.G)
+summary.2 = summary(model.3)
+summary.2
+```
+
+After fitting the model, perform a t test for each single beta_i, and a global F test for all predictors to answer to the following questions (you can use the lm function and the summary function).
+o Is the model significant?
+```{r}
+beta.i = coefficients(model.3)
+print(beta.i)
+cat("\nfstatistic : ", summary.2$fstatistic[1])
+cat("\np value : ", 0)
+```
+모델의 유의수준이 0임으로 모든 ALPHA값에서 귀무가설이 기각된다. 따라서 이 모델은 적어도 하나의 설명변수가 반응변수와 선형적 관계가 있다고 해석할 수 있으므로 모델은 significant 하다. 
+
+o Which of the predictors are NOT significant in the model at alpha=0.05, if you consider them individually?
+Head.W, Length는 significant하지 못한 설명 변수다. pvalue가 alpha값을 넘어 각 설명변수의 파라미터 베타가 0이라는 가설을 기각하지 못하기 때문이다. 
+
+Consider the subset of predictors that are not significant at alpha=0.05. Perform a test to see if they are significant or not, when you consider them simultaneously; i.e. test the hypotheses H0: betaq = ... = betap-1 = 0 vs H1: at least one != 0. Provide:
+o Distribution of the test statistic under H0 (type and parameters of the distribution)
+df1 = p-q, df2 = n - p인 F분포를 따른다. 
+
+o RSS of the full model and RSS of the reduced model, computed using the equation (you can check the result with the anova function, but you need to compute it using the equation)
+```{r}
+lm_full = lm(data = bears_indep, Weight~Head.L+Head.W+Neck.G+Length+Chest.G)
+lm_sub = lm(data = bears_indep, Weight~Head.L+Neck.G+Chest.G)
+```
+
+```{r}
+cal_RSS = function(residual){
+  RSS = sum(residual^2)
+  return (RSS)
+}
+full_RSS = cal_RSS(lm_full$residuals) # 69003.64
+sub_RSS = cal_RSS(lm_sub$residuals) # 71386.92
+full_RSS
+sub_RSS
+```
+o Value of the test statistics, computed using the equation (you can check the result
+with the anova function, but you need to compute it using the equation)
+```{r}
+cal_F = function(full_RSS, sub_RSS, df1, df2){
+    F.stat = ((sub_RSS - full_RSS) / df1) / (full_RSS / df2)
+    return (F.stat)
+}
+n = length(y)
+p = 6
+q = 4
+
+F_stat = cal_F(full_RSS, sub_RSS, df1 = p-q, df2 = n - p)
+F_stat
+```
+o P-value, computed using the equation (you can check the result with the anova
+function, but you need to compute it using the equation) 
+```{r}
+pval.3 = pf(F_stat, p-q, n-p, lower.tail = FALSE)
+pval.3 # pvalue
+```
+o Interpretation of the result.
+p val이 0.2이므로 일반적으로 사용하는 제 1종 요류의 확률인 1%, 5%, 10%보다 크다. 이는 귀무가설이 기각되지 못한다는 것을 의미한다. 따라서 Head.W, Length는 significant하지 못한 설명 변수라고 해석할 수 있다. 
