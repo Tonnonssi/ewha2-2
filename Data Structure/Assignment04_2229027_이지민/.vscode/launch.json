@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/jimin/Desktop/지민/ewha/2023-2/Data Structure/Assignment04_2229027_이지민",
+      "program": "/Users/jimin/Desktop/지민/ewha/2023-2/Data Structure/Assignment04_2229027_이지민/build/Debug/outDebug"
+    }
+  ]
+}
